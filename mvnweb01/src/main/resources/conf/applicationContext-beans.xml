@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- 数据源配置 -->  
+    <context:property-placeholder  
+        location="classpath:conf/oracle.properties" />  <!-- 加载oracle.properties中的配置信息，以便于下面配置数据源bean读取 -->
+    <bean id="dataSource"  
+        class="org.apache.commons.dbcp2.BasicDataSource"> <!-- dbcp连接池数据源 -->  
+        <property name="driverClassName" value="${jdbc.driverClassName}" />  
+        <property name="url" value="${jdbc.url}" />  
+        <property name="username" value="${jdbc.username}" />  
+        <property name="password" value="${jdbc.password}" />  
+       	<!--maxActive: 最大连接数量-->    
+		<property name="maxTotal" value="${dbcp.maxTotal}"/>  
+		<!--minIdle: 最小空闲连接-->    
+		<property name="minIdle" value="${dbcp.minIdle}"/>  
+		<!--maxIdle: 最大空闲连接-->    
+		<property name="maxIdle" value="${dbcp.maxIdle}"/>  
+		<!--initialSize: 初始化连接    -->
+		<property name="initialSize" value="${dbcp.initialSize}"/>  
+		<!-- 连接被泄露时是否打印 -->  
+		<property name="logAbandoned" value="${dbcp.logAbandoned}"/>  
+		<!--removeAbandoned: 是否自动回收超时连接--> 
+		<property name="RemoveAbandonedOnBorrow" value="${dbcp.RemoveAbandonedOnBorrow}"/>   
+		<property name="RemoveAbandonedOnMaintenance"  value="${dbcp.RemoveAbandonedOnMaintenance}"/>  
+		<!--removeAbandonedTimeout: 超时时间(以秒数为单位)-->    
+		<property name="removeAbandonedTimeout" value="${dbcp.removeAbandonedTimeout}"/>  
+		<!--maxWait: 超时等待时间以毫秒为单位 1000等于1秒-->  
+		<property name="MaxWaitMillis" value="${dbcp.MaxWaitMillis}"/>  
+		<!-- 在空闲连接回收器线程运行期间休眠的时间值,以毫秒为单位. -->  
+		<property name="timeBetweenEvictionRunsMillis" value="${dbcp.timeBetweenEvictionRunsMillis}"/>  
+		<!--  在每次空闲连接回收器线程(如果有)运行时检查的连接数量 -->  
+		<property name="numTestsPerEvictionRun" value="${dbcp.numTestsPerEvictionRun}"/>  
+		<!-- 1000 * 60 * 30  连接在池中保持空闲而不被空闲连接回收器线程-->  
+		<property name="minEvictableIdleTimeMillis" value="${dbcp.minEvictableIdleTimeMillis}"/> 
+		  
+    </bean>  
+        
+    <!-- session工厂 -->    
+    <bean id="sessionFactory"    
+        class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">    
+        <property name="dataSource" ref="dataSource"/> 
+        <!-- 自动扫描注解方式配置的hibernate类文件 -->    
+        <property name="packagesToScan">    
+            <list>    
+                <value>com.lovo.po</value>    
+            </list>    
+        </property>  
+        <property name="hibernateProperties">  
+            <props>  
+                <prop key="hibernate.dialect">${hibernate.dialect}</prop>  
+                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>  
+                <prop key="hibernate.format_sql">${hibernate.show_sql}</prop>
+                <prop key="hibernate.default_batch_fetch_size">${hibernate.default_batch_fetch_size}</prop>  
+                <prop key="hibernate.max_fetch_depth">${hibernate.max_fetch_depth}</prop>  
+                <prop key="hibernate.generate_statistics">${hibernate.generate_statistics}</prop>  
+                <prop key="hibernate.bytecode.use_reflection_optimizer">${hibernate.bytecode.use_reflection_optimizer}</prop>  
+                <prop key="hibernate.cache.use_second_level_cache">${hibernate.cache.use_second_level_cache}</prop>  
+                <prop key="hibernate.cache.use_query_cache">${hibernate.cache.use_query_cache}</prop>  
+                <prop key="hibernate.cache.region.factory_class">${hibernate.cache.region.factory_class}</prop>  
+                <!-- <prop key="net.sf.ehcache.configurationResourceName">/ehcache.xml</prop> -->  
+                <prop key="hibernate.cache.use_structured_entries">${hibernate.cache.use_structured_entries}</prop>  
+            </props>  
+        </property>  
+    </bean>    
+    
+    <!-- 配置HibernateTemplate模板bean -->
+    <bean id="hibernateTemplate"
+      class="org.springframework.orm.hibernate4.HibernateTemplate">
+    	<property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+     <!-- 配置事务管理器 -->    
+    <bean id="transactionManager"    
+        class="org.springframework.orm.hibernate4.HibernateTransactionManager">    
+        <property name="sessionFactory" ref="sessionFactory" />    
+    </bean>    
+    
+    <!-- 配置事务通知属性 -->    
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">    
+        <!-- 定义事务传播属性 -->    
+        <tx:attributes>    
+            <tx:method name="insert*" propagation="REQUIRED" />    
+            <tx:method name="update*" propagation="REQUIRED" />    
+            <tx:method name="edit*" propagation="REQUIRED" />    
+            <tx:method name="save*" propagation="REQUIRED" />    
+            <tx:method name="add*" propagation="REQUIRED" />    
+            <tx:method name="new*" propagation="REQUIRED" />    
+            <tx:method name="set*" propagation="REQUIRED" />    
+            <tx:method name="remove*" propagation="REQUIRED" />    
+            <tx:method name="delete*" propagation="REQUIRED" />    
+            <tx:method name="change*" propagation="REQUIRED" />    
+            <tx:method name="get*" propagation="REQUIRED" read-only="true" />    
+            <tx:method name="find*" propagation="REQUIRED" read-only="true" />    
+            <tx:method name="load*" propagation="REQUIRED" read-only="true" />    
+            <tx:method name="*" propagation="REQUIRED" read-only="true" />    
+        </tx:attributes>    
+    </tx:advice>    
+        
+    <!-- 应用普通类获取bean -->     
+    
+    
+    
+    <!-- 配置事务切面 -->    
+    <aop:config>    
+        <aop:pointcut id="serviceOperation"    
+            expression="execution(* com.lovo.bo..*.*(..))" />    
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceOperation" />    
+    </aop:config>    
+
+
+    <!-- 配置自动代理，用于自定义的切面生成代理对象，此元素的属性proxy-target-class的值
+       为true或false看代理目标(即切点方法定位的类上)是否有接口实现，有即用false（默认值）,否则用true。
+       建议在ssh项目中，将自定义切面的切点都定位到Action类的方法上，因为Action不需要实现任何接口，
+       故此proxy-target-class="true"
+    <aop:aspectj-autoproxy proxy-target-class="true"/> -->
+    
+    <!-- 自动加载构建bean，没有自定义切面的情况下使用此种写法 -->  
+    <context:component-scan base-package="com.lovo"/>
+
+    <!--
+       如果项目中有自定义的切面，那么采用此种写法，通过子元素指明要包含的类和排除的类，否则自定义的
+       切面无法发生作用
+     <context:component-scan base-package="com.lovo">
+    	<context:include-filter type="regex" expression="com\.lovo\.action..*"/>
+    	<context:exclude-filter type="regex" expression="com\.lovo\.bo..*"/>
+    </context:component-scan>
+
+    -->
+     
+   
+
+
+
+</beans>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache name="javassh">  
+  
+    <defaultCache maxElementsInMemory="1000" eternal="false"  
+        timeToIdleSeconds="3600" timeToLiveSeconds="3600"  
+        overflowToDisk="false">  
+    </defaultCache>  
+  
+    <!--   
+        <cache name="com.cdg.bean.UserModel"  
+        maxElementsInMemory="2000" eternal="false" timeToIdleSeconds="3600"  
+        timeToLiveSeconds="3600" overflowToDisk="false">  
+        </cache>  
+    -->
+    <!-- 配置hibernate默认的查询缓存，保存查询的结果集 -->  
+    <cache name="org.hibernate.cache.internal.StandardQueryCache"  
+        maxElementsInMemory="5000" eternal="false" timeToLiveSeconds="3600"  
+        overflowToDisk="false" />  
+    <!-- 配置hibernate查询表的时间戳 -->
+    <cache name="org.hibernate.cache.spi.UpdateTimestampsCache"  
+        maxElementsInMemory="5000" eternal="true" overflowToDisk="true" />  
+  
+  
+  
+</ehcache>  
